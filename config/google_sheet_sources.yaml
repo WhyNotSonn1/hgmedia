@@ -97,3 +97,14 @@ google_sheet_sources:
     target_staging_table: "staging.resource_performance"
     load_mode: "truncate"
     stream_to_staging: true
+
+  - source_id: "distro_infomation"
+    source_type: "google_sheet"
+    description: "[Tech - MLO] Danh sách nhạc cần mapping dự án"
+    spreadsheet_id: "17vVmy9Kv3m5Ah_k8JCs8PnxOnaAybB8R52kkLDuAVms"
+    worksheet_name: "List"
+    header_row: 1
+    data_start_row: 2
+    target_staging_table: "staging.distro_infomation"
+    load_mode: "truncate"
+    stream_to_staging: true

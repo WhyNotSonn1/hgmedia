@@ -71,3 +71,4 @@ sources:
       - name: sale_order 
       - name: resource_folders
       - name: resource_file_action
+      - name: distro_infomation
