@@ -9,6 +9,7 @@ Nếu skip (không đổi) -> trả về None.
 import logging
 
 from src.extractors.factory import get_extractor
+from src.loaders.staging_loader import StagingLoader
 from src.minio_client import MinIOClient
 from src.source_registry import SourceRegistry
 
@@ -37,6 +38,15 @@ def run_extract(source_config: dict, force: bool = False) -> dict | None:
     if source_type == "sql" and source_config.get("incremental") and last_marker:
         extra_kwargs["watermark_filter"] = last_marker
 
+    if source_config.get("stream_to_staging"):
+        load_mode = source_config.get("load_mode", "append")
+        if load_mode == "truncate":
+            logger.info(f"[{source_id}] Truncate staging trước khi stream.")
+            StagingLoader().prepare_stream(
+                staging_table=source_config["target_staging_table"],
+                load_mode=load_mode,
+            )
+
     result = extractor.extract(**extra_kwargs)
 
 
@@ -64,4 +74,3 @@ def run_extract(source_config: dict, force: bool = False) -> dict | None:
 
     logger.info(f"[{source_id}] Extract xong: {result.row_count} dòng -> {minio_path}")
     return {"source_id": source_id, "batch_id": batch_id, "minio_path": minio_path}
-    

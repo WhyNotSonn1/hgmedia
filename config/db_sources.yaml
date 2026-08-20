@@ -175,11 +175,48 @@ db_sources:
     source_table: "resource_file_info"
     schema: "dbo"
     stream_to_staging: true
-    custom_query: "SELECT Id, ResourceFileId, Title, ISRC, CreatedDate, MediaType, UpdatedDate, CASE WHEN UpdatedDate IS NULL OR CreatedDate > UpdatedDate THEN CreatedDate ELSE UpdatedDate END AS _wm FROM dbo.resource_file_info"
-    watermark_column: "_wm"
+    custom_query: >-
+      SELECT
+          "Id",
+          "ResourceFileId",
+          "ResourceFolderId",
+          "Title",
+          "ISRC",
+          "CreatedDate",
+          "MediaType",
+          "UpdatedDate",
+          CASE
+              WHEN "UpdatedDate" IS NULL
+                OR "CreatedDate" > "UpdatedDate"
+              THEN "CreatedDate"
+              ELSE "UpdatedDate"
+          END AS _wm
+      FROM "dbo"."resource_file_info" 
     upsert_key: ["Id"]
     load_mode: "truncate"
     target_staging_table: "staging.resource_file_info"
+
+  - source_id: "resource_folders"
+    source_type: "sql"
+    connection: "hg_stock"
+    source_table: "resource_folders"
+    schema: "dbo"
+    stream_to_staging: true
+    watermark_column: null
+    incremental: false
+    load_mode: "truncate"
+    target_staging_table: "staging.resource_folders"
+
+  - source_id: "resource_file_action"
+    source_type: "sql"
+    connection: "hg_stock"
+    source_table: "resource_file_action"
+    schema: "dbo"
+    stream_to_staging: true
+    watermark_column: null
+    incremental: false
+    load_mode: "truncate"
+    target_staging_table: "staging.resource_file_action"
 
   - source_id: "roles"
     source_type: "sql"
@@ -403,7 +440,7 @@ db_sources:
     connection: "hg_stock"
     source_table: "resource_storage_history"
     schema: "dbo"
-    custom_query: "SELECT ResourceFileInfoId, ToStatus FROM dbo.resource_storage_history"
+    custom_query: 'SELECT "ResourceFileInfoId", "ToStatus" FROM "dbo"."resource_storage_history"'
     watermark_column: null
     incremental: false
     load_mode: "truncate"
@@ -516,6 +553,17 @@ db_sources:
     load_mode: "truncate"
     stream_to_staging: true
 
+  - source_id: "res_users"
+    source_type: "sql"
+    connection: "odoo_pg"
+    source_table: "res_users"
+    schema: "public"
+    watermark_column: null
+    incremental: false
+    target_staging_table: "staging.res_users"
+    load_mode: "truncate"
+    stream_to_staging: true
+
   - source_id: "hr_department"
     source_type: "sql"
     connection: "odoo_pg"
@@ -524,6 +572,17 @@ db_sources:
     watermark_column: null
     incremental: false
     target_staging_table: "staging.hr_department"
+    load_mode: "truncate"
+    stream_to_staging: true
+
+  - source_id: "sale_order"
+    source_type: "sql"
+    connection: "odoo_pg"
+    source_table: "sale_order"
+    schema: "public"
+    watermark_column: null
+    incremental: false
+    target_staging_table: "staging.sale_order"
     load_mode: "truncate"
     stream_to_staging: true
 

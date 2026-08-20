@@ -4,7 +4,6 @@ elastic_sources:
     connection: "elastic"
     es_index: "channel-video-info"
     date_field: "PublishedAt"
-    date_from: "2025-06-01"
     page_size: 5000
     sort_field: "YoutubeVideoId.keyword"
     target_staging_table: "staging.channel_video_info"

@@ -93,6 +93,7 @@ google_sheet_sources:
       - "Nghệ sĩ sản xuất"
       - "A&R"
       - "Dự án chốt"
+      - "Mã BH"
     target_staging_table: "staging.resource_performance"
     load_mode: "truncate"
     stream_to_staging: true

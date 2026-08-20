@@ -7,7 +7,7 @@ Chỉ làm 3 việc: ép kiểu cơ bản, thêm cột metadata, ghi vào đúng
 from datetime import datetime
 
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect
 
 from src.connections import get_connection, get_sqlalchemy_uri
 
@@ -17,6 +17,31 @@ class StagingLoader:
     def __init__(self):
         conn_cfg = get_connection("dwh_postgres")
         self.engine = create_engine(get_sqlalchemy_uri(conn_cfg))
+
+    def prepare_stream(self, staging_table: str, load_mode: str) -> None:
+        """Chuẩn bị bảng staging trước khi extractor stream các chunk."""
+        if load_mode == "append":
+            return
+
+        if load_mode != "truncate":
+            raise ValueError(
+                f"load_mode='{load_mode}' chưa được hỗ trợ "
+                "khi stream_to_staging=true"
+            )
+
+        schema, table = staging_table.split(".", 1)
+        quote = self.engine.dialect.identifier_preparer.quote
+        quoted_schema = quote(schema)
+        quoted_table = f"{quoted_schema}.{quote(table)}"
+
+        with self.engine.begin() as conn:
+            conn.exec_driver_sql(
+                f"CREATE SCHEMA IF NOT EXISTS {quoted_schema}"
+            )
+
+        if inspect(self.engine).has_table(table, schema=schema):
+            with self.engine.begin() as conn:
+                conn.exec_driver_sql(f"TRUNCATE TABLE {quoted_table}")
 
     def load(
         self, df: pd.DataFrame, staging_table: str, batch_id: str,
